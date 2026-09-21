@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en-GB">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rowley Birkin’s Hostelry — board</title>
+<title>Finbar Fortescue’s Hostelry — board</title>
 <style>
   :root {
     --oak: #0d0d0d;
@@ -229,7 +229,7 @@
     color: #cbbba0;
   }
   .node.barman { border-color: #555; }
-  .node.birkin { border-color: var(--brass); }
+  .node.fortescue { border-color: var(--brass); }
   .node.pean { border-color: #9aa3a8; }
   aside img.face {
     display: block;
@@ -278,7 +278,7 @@
 </head>
 <body>
   <header>
-    <h1>Rowley Birkin’s Hostelry</h1>
+    <h1>Finbar Fortescue’s Hostelry</h1>
     <p>Drag anyone or anywhere. The chain will follow.</p>
     <div class="tools">
       <label class="chk"><input type="checkbox" id="show-chain" checked /> Sentence chain</label>
@@ -301,7 +301,7 @@
   </main>
 
 <script>
-const STORAGE = "rowley-hostelry-board-v4";
+const STORAGE = "finbar-fortescue-board-v5";
 
 const nodes = [
   { id: "door", kind: "place", name: "The door", sub: "Fog goes in first", xp: 1.5, yp: 2,
@@ -315,7 +315,7 @@ const nodes = [
   { id: "wiltshire", kind: "place", name: "Wiltshire", sub: "Krug, 1947", xp: 85, yp: 2,
     blurb: "A man for the boots, a woman for the grievances. Sabre among the umbrellas. “In the better houses of Reims—”" },
   { id: "bar", kind: "place", name: "The bar", sub: "No bill is presented", xp: 1.5, yp: 36,
-    blurb: "Polished enough to shave in. The bar is Birkin’s, in the way a bench is a judge’s. Death works here. He already knows the drinks." },
+    blurb: "Polished enough to shave in. The bar is Fortescue’s, in the way a bench is a judge’s. Death works here. He already knows the drinks." },
   { id: "table", kind: "place", name: "Corner table", sub: "Six, then seven", xp: 44, yp: 40,
     blurb: "Coats good. Shoes that had been good. Faces with the faintly astonished composure of people told an unwelcome joke in Latin. They think it is a sport." },
   { id: "lucerne", kind: "place", name: "Lucerne", sub: "A duke’s clock", xp: 85, yp: 36,
@@ -330,12 +330,12 @@ const nodes = [
   { id: "pean", kind: "person", cls: "pean", name: "Cyril Pean", sub: "Bentley, in gear", actor: "Willem Dafoe", portrait: "assets/portrait-pean.png", xp: 12, yp: 14,
     line: "These machines are perfectly safe if one knows what one is—",
     blurb: "Pale, thin, a coat that hangs. Password he is not sure of. The parcel at the door. Secret: emissary, errand, or a drink. Face after Willem Dafoe." },
-  { id: "birkin", kind: "person", cls: "birkin", name: "Rowley Birkin, Q.C.", sub: "Still appearing", actor: "Paul Whitehouse", portrait: "assets/portrait-birkin.png", xp: 1.5, yp: 48,
+  { id: "fortescue", kind: "person", cls: "fortescue", name: "Finbar Fortescue, Q.C.", sub: "Still appearing", actor: "Paul Whitehouse", portrait: "assets/portrait-fortescue.png", xp: 1.5, yp: 48,
     line: "…I put it to the spaniel, I put it… I put it down.",
-    blurb: "Host. Poured into his clothes at breakfast. A summing-up with no jury. Last words not written. Do not join him. Face after Paul Whitehouse, who originated him." },
+    blurb: "Host. Poured into his clothes at breakfast. A summing-up with no jury. Last words not written. Do not join him. Face after Paul Whitehouse." },
   { id: "barman", kind: "person", cls: "barman", name: "The barman", sub: "Death, in service", actor: "Mads Mikkelsen", portrait: "assets/portrait-barman.png", xp: 14, yp: 48,
     line: "He already knew the drinks.",
-    blurb: "Dry, unspoken. Moves around Birkin as around a hole in the pavement. No hood. No chess. Rowley’s name is on the door. Death works here. Face after Mads Mikkelsen." },
+    blurb: "Dry, unspoken. Moves around Fortescue as around a hole in the pavement. No hood. No chess. Finbar’s name is on the door. Death works here. Face after Mads Mikkelsen." },
   { id: "pembroke", kind: "person", name: "Sir Alistair Pembroke", sub: "Chandelier", actor: "John Malkovich", portrait: "assets/portrait-pembroke.png", xp: 28, yp: 18,
     line: "We shall leave at—",
     blurb: "Charles Street. Last waltz. Breguet. Promised Lady Pembroke midnight; also the 8.15 to Newbury. Secret: wife, daughter, or the train. Face after John Malkovich." },
@@ -363,7 +363,7 @@ const chain = [
   ["ashworth", "felix"],
   ["felix", "tristram"],
   ["tristram", "pean"],
-  ["pean", "birkin"]
+  ["pean", "fortescue"]
 ];
 
 const placeLinks = [
@@ -374,7 +374,7 @@ const placeLinks = [
   ["felix", "sunningdale"],
   ["tristram", "mercers"],
   ["pean", "street"],
-  ["birkin", "bar"],
+  ["fortescue", "bar"],
   ["barman", "bar"]
 ];
 
@@ -575,3 +575,4 @@ layoutAll();
 </script>
 </body>
 </html>
+
