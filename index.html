@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rowley Birkin’s Hostelry — board</title>
+<style>
+  :root {
+    --oak: #0d0d0d;
+    --oak-2: #1a1a1a;
+    --cream: #f3ead8;
+    --cream-2: #e7dcc4;
+    --ink: #1c1610;
+    --brass: #c4a35a;
+    --port: #6b1f24;
+    --fog: #9aa3a8;
+    --line: #c4a35a;
+    --place: #4a3f32;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #0a0a0a;
+    color: var(--cream);
+    font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", serif;
+  }
+  body {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 100%;
+  }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem 1.2rem;
+    padding: 0.85rem 1.2rem;
+    background: #111;
+    border-bottom: 1px solid #2a2a2a;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  header p {
+    margin: 0;
+    font-style: italic;
+    color: #cbbba0;
+    font-size: 0.92rem;
+  }
+  .tools {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
+  }
+  button, label.chk {
+    font: inherit;
+    font-size: 0.82rem;
+    background: var(--oak-2);
+    color: var(--cream);
+    border: 1px solid #6a5640;
+    padding: 0.35rem 0.7rem;
+    cursor: pointer;
+  }
+  button:hover, label.chk:hover { border-color: var(--brass); }
+  label.chk { display: inline-flex; align-items: center; gap: 0.35rem; user-select: none; }
+  main {
+    display: grid;
+    grid-template-columns: 1fr minmax(240px, 300px);
+    min-height: 0;
+  }
+  #stage {
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    background: #050505;
+  }
+  #board {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(ellipse 520px 360px at 90px 70px, rgba(170, 178, 186, 0.16) 0%, transparent 72%),
+      radial-gradient(ellipse 480px 380px at 1240px 60px, rgba(176, 78, 22, 0.18) 0%, transparent 68%),
+      radial-gradient(ellipse 420px 260px at 150px 420px, rgba(196, 163, 90, 0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 640px 420px at 720px 480px, rgba(28, 22, 16, 0.55) 0%, transparent 75%),
+      radial-gradient(ellipse at 50% 40%, #141414 0%, #0a0a0a 52%, #000 100%);
+  }
+  #board::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.22;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+  #board::after {
+    content: "";
+    position: absolute;
+    left: -8%;
+    top: -12%;
+    width: 58%;
+    height: 72%;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse at 18% 22%, rgba(190, 198, 204, 0.14), transparent 58%),
+      radial-gradient(ellipse at 32% 10%, rgba(150, 156, 162, 0.08), transparent 50%);
+    animation: fogdrift 28s ease-in-out infinite alternate;
+  }
+  @keyframes fogdrift {
+    from { transform: translate(0, 0); opacity: 0.8; }
+    to { transform: translate(36px, 18px); opacity: 1; }
+  }
+  #wires {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 1;
+  }
+  .node { z-index: 2; }
+  #wires line {
+    stroke: var(--line);
+    stroke-width: 1.6;
+    stroke-opacity: 0.85;
+  }
+  #wires line.place-link {
+    stroke: #8a7a66;
+    stroke-dasharray: 5 4;
+    stroke-opacity: 0.7;
+  }
+  .node {
+    position: absolute;
+    min-width: 118px;
+    max-width: 180px;
+    padding: 0.45rem 0.6rem 0.5rem;
+    background: var(--cream);
+    color: var(--ink);
+    border: 1px solid #cbb898;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    box-shadow: none;
+  }
+  .node:active { cursor: grabbing; }
+  .node.selected { outline: 2px solid var(--brass); }
+  .node .kind {
+    display: block;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6a5a48;
+    margin-bottom: 0.12rem;
+  }
+  .node .name {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .node .sub {
+    display: block;
+    margin-top: 0.18rem;
+    font-size: 0.75rem;
+    font-style: italic;
+    color: #4a3f32;
+  }
+  .node.place {
+    background: var(--place);
+    color: var(--cream-2);
+    border-color: #6a5c4c;
+    min-width: 150px;
+    max-width: 210px;
+  }
+  .node.place .kind { color: #c4b49a; }
+  .node.place .sub { color: #d8cbb6; }
+  .node.person {
+    min-width: 148px;
+    max-width: 148px;
+    padding: 0 0 0.45rem;
+    background: #16110c;
+    color: var(--cream);
+    border-color: #6a5640;
+  }
+  .node.person .face-wrap {
+    position: relative;
+  }
+  .node.person img.face {
+    display: block;
+    width: 146px;
+    height: 146px;
+    object-fit: cover;
+    object-position: top center;
+  }
+  .node.person .actor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.22rem 0.3rem 0.28rem;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    text-align: center;
+    color: #f3ead8;
+    background: rgba(0, 0, 0, 0.72);
+  }
+  .node.person .kind {
+    padding: 0.32rem 0.5rem 0;
+    color: #c4b49a;
+  }
+  .node.person .name {
+    padding: 0 0.5rem;
+    color: var(--cream);
+    font-size: 0.82rem;
+  }
+  .node.person .sub {
+    padding: 0 0.5rem;
+    color: #cbbba0;
+  }
+  .node.barman { border-color: #555; }
+  .node.birkin { border-color: var(--brass); }
+  .node.pean { border-color: #9aa3a8; }
+  aside img.face {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 0 0.7rem;
+    border: 1px solid #5a4633;
+  }
+  aside {
+    background: #0e0e0e;
+    border-left: 1px solid #2a2a2a;
+    padding: 1rem 1.05rem 1.4rem;
+    overflow: auto;
+  }
+  aside h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+  }
+  aside .meta {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 0.7rem;
+  }
+  aside p {
+    margin: 0 0 0.7rem;
+    line-height: 1.45;
+    color: #e6dcc8;
+    font-size: 0.92rem;
+  }
+  aside em { color: #fff8ea; }
+  .hint {
+    margin-top: 1.2rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid #4a3a2c;
+    font-size: 0.82rem;
+    color: #b7a890;
+    font-style: italic;
+  }
+  @media (max-width: 820px) {
+    main { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+    aside { border-left: 0; border-top: 1px solid #5a4633; max-height: 32vh; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Rowley Birkin’s Hostelry</h1>
+    <p>Drag anyone or anywhere. The chain will follow.</p>
+    <div class="tools">
+      <label class="chk"><input type="checkbox" id="show-chain" checked /> Sentence chain</label>
+      <label class="chk"><input type="checkbox" id="show-places" checked /> Death places</label>
+      <button type="button" id="reset">Reset layout</button>
+    </div>
+  </header>
+  <main>
+    <div id="stage">
+      <div id="board">
+        <svg id="wires"></svg>
+      </div>
+    </div>
+    <aside id="panel">
+      <div class="meta">The room</div>
+      <h2>November 1955</h2>
+      <p>St James’s. Fog at the door. Oak the colour of old port. Click a name. Drag anything. Layout is remembered in this browser.</p>
+      <p class="hint">Gold lines: each unfinished sentence, handed on. Dashed lines: where they left the century.</p>
+    </aside>
+  </main>
+
+<script>
+const STORAGE = "rowley-hostelry-board-v4";
+
+const nodes = [
+  { id: "door", kind: "place", name: "The door", sub: "Fog goes in first", xp: 1.5, yp: 2,
+    blurb: "The fog comes in first, as a relation who has not been invited but knows the way to the drinks. Chapter One opens it. Chapter Eight is who comes in." },
+  { id: "charles", kind: "place", name: "Charles Street", sub: "Arabella’s coming-out", xp: 28, yp: 2,
+    blurb: "June. Last waltz. Venetian chandelier. “We shall leave at—”" },
+  { id: "lodge", kind: "place", name: "The lodge", sub: "Inverness-shire", xp: 48, yp: 2,
+    blurb: "Mess dress. Empty chair. Marlin where a stag ought to be. “The Queen—”" },
+  { id: "fire", kind: "place", name: "The fire", sub: "Since Mafeking", xp: 66, yp: 2,
+    blurb: "A fire that has been burning since the Relief of Mafeking, as if Mafeking had never been relieved and never would be." },
+  { id: "wiltshire", kind: "place", name: "Wiltshire", sub: "Krug, 1947", xp: 85, yp: 2,
+    blurb: "A man for the boots, a woman for the grievances. Sabre among the umbrellas. “In the better houses of Reims—”" },
+  { id: "bar", kind: "place", name: "The bar", sub: "No bill is presented", xp: 1.5, yp: 36,
+    blurb: "Polished enough to shave in. The bar is Birkin’s, in the way a bench is a judge’s. Death works here. He already knows the drinks." },
+  { id: "table", kind: "place", name: "Corner table", sub: "Six, then seven", xp: 44, yp: 40,
+    blurb: "Coats good. Shoes that had been good. Faces with the faintly astonished composure of people told an unwelcome joke in Latin. They think it is a sport." },
+  { id: "lucerne", kind: "place", name: "Lucerne", sub: "A duke’s clock", xp: 85, yp: 36,
+    blurb: "Black Forest. Cravat in the weights. “I wanted to know if it kept decent time—”" },
+  { id: "street", kind: "place", name: "The kerb", sub: "Bentley, in gear", xp: 1.5, yp: 88,
+    blurb: "Showing his man how to crank it. Perfectly safe, if one knows what one is—" },
+  { id: "sunningdale", kind: "place", name: "Sunningdale", sub: "First tee, birthday", xp: 66, yp: 88,
+    blurb: "American driver. Queen Victoria. Drinks trolley. Ball still on the tee. “I do apologise, I think I’ve sliced.”" },
+  { id: "mercers", kind: "place", name: "The Mercers", sub: "Godalming, a moth", xp: 85, yp: 88,
+    blurb: "After the Loyal Toast, before the bishop. The punchline is not delivered." },
+
+  { id: "pean", kind: "person", cls: "pean", name: "Cyril Pean", sub: "Bentley, in gear", actor: "Willem Dafoe", portrait: "assets/portrait-pean.png", xp: 12, yp: 14,
+    line: "These machines are perfectly safe if one knows what one is—",
+    blurb: "Pale, thin, a coat that hangs. Password he is not sure of. The parcel at the door. Secret: emissary, errand, or a drink. Face after Willem Dafoe." },
+  { id: "birkin", kind: "person", cls: "birkin", name: "Rowley Birkin, Q.C.", sub: "Still appearing", actor: "Paul Whitehouse", portrait: "assets/portrait-birkin.png", xp: 1.5, yp: 48,
+    line: "…I put it to the spaniel, I put it… I put it down.",
+    blurb: "Host. Poured into his clothes at breakfast. A summing-up with no jury. Last words not written. Do not join him. Face after Paul Whitehouse, who originated him." },
+  { id: "barman", kind: "person", cls: "barman", name: "The barman", sub: "Death, in service", actor: "Mads Mikkelsen", portrait: "assets/portrait-barman.png", xp: 14, yp: 48,
+    line: "He already knew the drinks.",
+    blurb: "Dry, unspoken. Moves around Birkin as around a hole in the pavement. No hood. No chess. Rowley’s name is on the door. Death works here. Face after Mads Mikkelsen." },
+  { id: "pembroke", kind: "person", name: "Sir Alistair Pembroke", sub: "Chandelier", actor: "John Malkovich", portrait: "assets/portrait-pembroke.png", xp: 28, yp: 18,
+    line: "We shall leave at—",
+    blurb: "Charles Street. Last waltz. Breguet. Promised Lady Pembroke midnight; also the 8.15 to Newbury. Secret: wife, daughter, or the train. Face after John Malkovich." },
+  { id: "binky", kind: "person", name: "Major Binky Holloway", sub: "Marlin", actor: "Gary Oldman", portrait: "assets/portrait-binky.png", xp: 45, yp: 16,
+    line: "The Queen—",
+    blurb: "Binky since Harrow. Will not let the party stop. Lodge, mess dress, sneeze like a twelve-bore. Secret: whose fish; who insisted the toast. Face after Gary Oldman." },
+  { id: "hugo", kind: "person", name: "Lord Hugo Fitzwilliam", sub: "Krug, sabred", actor: "George Clooney", portrait: "assets/portrait-hugo.png", xp: 62, yp: 18,
+    line: "In the better houses of Reims—",
+    blurb: "Waste as a moral failure. Cut in. Secret: whose sabre, who taught the stroke. Face after George Clooney." },
+  { id: "ashworth", kind: "person", name: "Commodore Ashworth", sub: "Cuckoo clock", actor: "Liam Neeson", portrait: "assets/portrait-ashworth.png", xp: 28, yp: 56,
+    line: "I wanted to know if it kept decent time—",
+    blurb: "Hears hug. Lucerne. Letter to Felix, late. Secret: whether the clock was ever a duke’s. Face after Liam Neeson." },
+  { id: "felix", kind: "person", name: "Felix Marchmont", sub: "American driver", actor: "Brad Pitt", portrait: "assets/portrait-felix.png", xp: 45, yp: 62,
+    line: "I do apologise, I think I’ve sliced.",
+    blurb: "Youngest. Birthday. Ball still on the tee. Secret: who gave the club, and when a warning counts. Face after Brad Pitt." },
+  { id: "tristram", kind: "person", name: "Tristram Ffolkes", sub: "A moth", actor: "John Travolta", portrait: "assets/portrait-tristram.png", xp: 62, yp: 56,
+    line: "the punchline",
+    blurb: "Speaks for a living. Mercers. A man should be allowed to finish. Secret: the punchline itself. Do not write it yet. Face after John Travolta." }
+];
+
+const chain = [
+  ["pembroke", "binky"],
+  ["binky", "hugo"],
+  ["hugo", "ashworth"],
+  ["ashworth", "felix"],
+  ["felix", "tristram"],
+  ["tristram", "pean"],
+  ["pean", "birkin"]
+];
+
+const placeLinks = [
+  ["pembroke", "charles"],
+  ["binky", "lodge"],
+  ["hugo", "wiltshire"],
+  ["ashworth", "lucerne"],
+  ["felix", "sunningdale"],
+  ["tristram", "mercers"],
+  ["pean", "street"],
+  ["birkin", "bar"],
+  ["barman", "bar"]
+];
+
+const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
+const board = document.getElementById("board");
+const wires = document.getElementById("wires");
+const panel = document.getElementById("panel");
+const defaults = nodes.map((n) => ({ id: n.id, xp: n.xp, yp: n.yp }));
+
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE) || "null");
+    if (!saved) return;
+    saved.forEach((p) => {
+      if (byId[p.id] && Number.isFinite(p.xp) && Number.isFinite(p.yp)) {
+        byId[p.id].xp = p.xp;
+        byId[p.id].yp = p.yp;
+      }
+    });
+  } catch (e) {}
+}
+
+function save() {
+  localStorage.setItem(
+    STORAGE,
+    JSON.stringify(nodes.map((n) => ({ id: n.id, xp: n.xp, yp: n.yp })))
+  );
+}
+
+function applyPos(n, el) {
+  const maxX = Math.max(0, board.clientWidth - el.offsetWidth);
+  const maxY = Math.max(0, board.clientHeight - el.offsetHeight);
+  const x = Math.max(0, Math.min((n.xp / 100) * board.clientWidth, maxX));
+  const y = Math.max(0, Math.min((n.yp / 100) * board.clientHeight, maxY));
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+}
+
+function layoutAll() {
+  nodes.forEach((n) => {
+    const el = document.getElementById("n-" + n.id);
+    if (el) applyPos(n, el);
+  });
+  draw();
+}
+
+function centre(el) {
+  return {
+    x: el.offsetLeft + el.offsetWidth / 2,
+    y: el.offsetTop + el.offsetHeight / 2
+  };
+}
+
+function draw() {
+  const showChain = document.getElementById("show-chain").checked;
+  const showPlaces = document.getElementById("show-places").checked;
+  const bits = [];
+  function add(list, cls) {
+    list.forEach(([a, b]) => {
+      const ea = document.getElementById("n-" + a);
+      const eb = document.getElementById("n-" + b);
+      if (!ea || !eb) return;
+      const pa = centre(ea);
+      const pb = centre(eb);
+      bits.push(
+        `<line class="${cls}" x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" />`
+      );
+    });
+  }
+  if (showChain) add(chain, "chain-link");
+  if (showPlaces) add(placeLinks, "place-link");
+  wires.innerHTML = bits.join("");
+}
+
+function show(id) {
+  nodes.forEach((n) => {
+    const el = document.getElementById("n-" + n.id);
+    if (el) el.classList.toggle("selected", n.id === id);
+  });
+  const n = byId[id];
+  if (!n) return;
+  const line = n.line
+    ? `<p><em>“${n.line}”</em></p>`
+    : "";
+  const face = n.portrait
+    ? `<img class="face" src="${n.portrait}" alt="" />`
+    : "";
+  panel.innerHTML = `
+    <div class="meta">${n.kind === "place" ? "Location" : "Character"}</div>
+    ${face}
+    <h2>${n.name}${n.actor ? ` (${n.actor})` : ""}</h2>
+    ${line}
+    <p>${n.blurb}</p>
+    <p class="hint">Drag the card. Gold is the unfinished sentence. Dashed is where they died, or where they stand.</p>
+  `;
+}
+
+function render() {
+  [...board.querySelectorAll(".node")].forEach((el) => el.remove());
+  nodes.forEach((n) => {
+    const el = document.createElement("div");
+    el.className = "node " + n.kind + (n.cls ? " " + n.cls : "");
+    el.id = "n-" + n.id;
+    el.innerHTML = (n.portrait
+        ? `<div class="face-wrap"><img class="face" src="${n.portrait}" alt="" draggable="false" />${n.actor ? `<span class="actor">(${n.actor})</span>` : ""}</div>`
+        : "") +
+      `<span class="kind">${n.kind === "place" ? "Place" : "Person"}</span>
+      <span class="name">${n.name}</span>
+      <span class="sub">${n.sub}</span>`;
+    el.addEventListener("pointerdown", (ev) => startDrag(ev, n, el));
+    el.addEventListener("click", () => {
+      if (el.dataset.dragged === "1") return;
+      show(n.id);
+    });
+    board.appendChild(el);
+    applyPos(n, el);
+    const face = el.querySelector("img.face");
+    if (face) {
+      face.addEventListener("load", () => {
+        applyPos(n, el);
+        draw();
+      });
+    }
+  });
+  draw();
+}
+
+let drag = null;
+
+function moveDrag(ev) {
+  if (!drag) return;
+  const rect = board.getBoundingClientRect();
+  let x = ev.clientX - rect.left - drag.dx;
+  let y = ev.clientY - rect.top - drag.dy;
+  const maxX = Math.max(0, board.clientWidth - drag.el.offsetWidth);
+  const maxY = Math.max(0, board.clientHeight - drag.el.offsetHeight);
+  x = Math.max(0, Math.min(x, maxX));
+  y = Math.max(0, Math.min(y, maxY));
+  drag.n.xp = board.clientWidth ? (x / board.clientWidth) * 100 : 0;
+  drag.n.yp = board.clientHeight ? (y / board.clientHeight) * 100 : 0;
+  drag.el.style.left = x + "px";
+  drag.el.style.top = y + "px";
+  if (Math.hypot(ev.clientX - drag.startX, ev.clientY - drag.startY) > 4) {
+    drag.el.dataset.dragged = "1";
+  }
+  draw();
+}
+
+function endDrag() {
+  if (!drag) return;
+  save();
+  drag = null;
+  window.removeEventListener("pointermove", moveDrag);
+  window.removeEventListener("pointerup", endDrag);
+  window.removeEventListener("pointercancel", endDrag);
+}
+
+function startDrag(ev, n, el) {
+  ev.preventDefault();
+  el.dataset.dragged = "0";
+  drag = {
+    n,
+    el,
+    dx: ev.clientX - el.getBoundingClientRect().left,
+    dy: ev.clientY - el.getBoundingClientRect().top,
+    startX: ev.clientX,
+    startY: ev.clientY
+  };
+  show(n.id);
+  window.addEventListener("pointermove", moveDrag);
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
+}
+
+document.getElementById("show-chain").addEventListener("change", draw);
+document.getElementById("show-places").addEventListener("change", draw);
+document.getElementById("reset").addEventListener("click", () => {
+  defaults.forEach((p) => {
+    byId[p.id].xp = p.xp;
+    byId[p.id].yp = p.yp;
+  });
+  localStorage.removeItem(STORAGE);
+  layoutAll();
+});
+
+const stage = document.getElementById("stage");
+function sizeBoard() {
+  board.style.width = stage.clientWidth + "px";
+  board.style.height = stage.clientHeight + "px";
+  layoutAll();
+}
+window.addEventListener("resize", sizeBoard);
+
+load();
+sizeBoard();
+render();
+layoutAll();
+</script>
+</body>
+</html>
